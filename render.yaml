@@ -2,10 +2,16 @@ services:
   - type: web
     name: 7a6-study-bot
     runtime: node
+    region: singapore
+    plan: free
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /health
     envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: 7a6-study-bot-db
+          property: connectionString
       - key: OPENAI_API_KEY
         sync: false
       - key: OPENAI_MODEL
@@ -14,3 +20,9 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
+
+databases:
+  - name: 7a6-study-bot-db
+    region: singapore
+    plan: free
+    postgresMajorVersion: '18'
