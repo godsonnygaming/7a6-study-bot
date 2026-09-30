@@ -1,0 +1,16 @@
+{
+  "name": "7a6-study-bot-v1-pro",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
+    "openai": "^6.0.0"
+  },
+  "engines": {
+    "node": ">=20 <23"
+  }
+}
