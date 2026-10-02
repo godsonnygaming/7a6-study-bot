@@ -5,8 +5,8 @@ const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 const { Pool } = require('pg');
 
-let OpenAI;
-try { OpenAI = require('openai').default || require('openai'); } catch {}
+let GoogleGenAI;
+try { GoogleGenAI = require('@google/genai').GoogleGenAI; } catch {}
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
@@ -272,24 +272,26 @@ app.post('/api/tasks/:id/complete',auth,async(req,res)=>{
 const aiLimiter=rateLimit({windowMs:60_000,max:8,message:{error:'Bạn đang gửi AI quá nhanh. Hãy chờ một chút.'}});
 app.post('/api/ai',auth,aiLimiter,async(req,res)=>{
   try {
-    if(!OpenAI || !process.env.OPENAI_API_KEY) return res.status(503).json({error:'AI chưa được cấu hình'});
+    if(!GoogleGenAI || !process.env.GEMINI_API_KEY) return res.status(503).json({error:'Gemini AI chưa được cấu hình'});
     let aiCount=Number(req.user.ai_count)||0, aiDate=req.user.ai_date?String(req.user.ai_date).slice(0,10):null;
     if(aiDate!==dateKey()){aiDate=dateKey();aiCount=0;}
     if(aiCount>=30)return res.status(429).json({error:'Bạn đã dùng 30 lượt AI hôm nay'});
     const message=cleanText(req.body.message,5000);
     if(!message)return res.status(400).json({error:'Hãy nhập câu hỏi'});
-    const client=new OpenAI({apiKey:process.env.OPENAI_API_KEY});
-    const z=await client.responses.create({
-      model:process.env.OPENAI_MODEL||'gpt-5.6-luna',
-      instructions:'Bạn là 7A6 Study Bot, trợ lý học tập cho học sinh THCS. Trả lời bằng tiếng Việt, dễ hiểu, có ví dụ và các bước khi cần. Khuyến khích học sinh tự suy nghĩ. Không hỗ trợ gian lận trong kiểm tra.',
-      input:message
+    const client=new GoogleGenAI({apiKey:process.env.GEMINI_API_KEY});
+    const z=await client.models.generateContent({
+      model:process.env.GEMINI_MODEL||'gemini-3.8-flash',
+      contents:message,
+      config:{
+        systemInstruction:'Bạn là 7A6 Study Bot, trợ lý học tập cho học sinh THCS. Trả lời bằng tiếng Việt, dễ hiểu, có ví dụ và các bước khi cần. Khuyến khích học sinh tự suy nghĩ. Không hỗ trợ gian lận trong kiểm tra.'
+      }
     });
     aiCount++;
     const xp=Number(req.user.xp)+5;
     const u=(await pool.query('UPDATE users SET ai_count=$1,ai_date=$2,xp=$3,level=$4 WHERE id=$5 RETURNING *',
       [aiCount,aiDate,xp,levelFor(xp),req.user.id])).rows[0];
-    res.json({answer:z.output_text||'Chưa có câu trả lời.',user:publicUser(u)});
-  } catch(e){console.error('AI error:',e);res.status(500).json({error:'AI đang bận, hãy thử lại sau'});}
+    res.json({answer:z.text||'Chưa có câu trả lời.',user:publicUser(u)});
+  } catch(e){console.error('Gemini error:',e);res.status(500).json({error:'Gemini AI đang bận, hãy thử lại sau'});}
 });
 
 app.use('/api/admin',auth,admin);
