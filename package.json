@@ -1,6 +1,6 @@
 {
-  "name": "7a6-study-bot-v1-pro",
-  "version": "1.0.0",
+  "name": "7a6-study-bot-v2",
+  "version": "2.0.0",
   "private": true,
   "scripts": {
     "start": "node server.js"

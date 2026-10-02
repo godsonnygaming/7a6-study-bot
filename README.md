@@ -1,25 +1,22 @@
-# 7A6 Study Bot — Render + PostgreSQL
+# 7A6 Study Bot V2
 
-This version stores users, schedules, announcements, tasks, XP, sessions, and progress in PostgreSQL instead of `data/db.json`.
+Bản hoàn thiện dùng Express + PostgreSQL + OpenAI, tối ưu cho Render.
 
-## Render deploy
+## Có gì mới
+- UI V2 hiện đại, responsive/mobile.
+- Sửa lỗi đăng nhập FormData.
+- Check-in được khóa **1 lần/ngày ở database**, chống spam API.
+- Task XP cũng khóa theo ngày và transaction/row lock.
+- Auth token lưu PostgreSQL.
+- Rate limit cho API và AI.
+- Admin dashboard.
+- AI tối đa 30 lượt/ngày/người + 5 XP/lượt.
+- Health check `/health`.
+- Tương thích import dữ liệu `data/db.json` cũ nếu file đó tồn tại trong source.
 
-The included `render.yaml` creates:
-- a Node web service
-- a Render PostgreSQL database
-- `DATABASE_URL` wired automatically to the web service
+## Render
+Tạo Web Service và PostgreSQL cùng region Singapore.
+Đặt `DATABASE_URL` bằng Internal Database URL của PostgreSQL (hoặc dùng Blueprint ở `render.yaml`).
+Đặt `ADMIN_USER`, `ADMIN_PASSWORD` (ít nhất 12 ký tự), và `OPENAI_API_KEY`.
 
-On the first Blueprint sync, Render will prompt for the values marked `sync: false`:
-- `OPENAI_API_KEY`
-- `ADMIN_USER`
-- `ADMIN_PASSWORD`
-
-Do not commit real API keys or passwords to GitHub.
-
-## Important free-tier note
-
-Render currently offers Free Postgres, but a Free Postgres database expires 30 days after creation and has no backups. For a real long-term public app, upgrade the database before the free period ends. See Render's current Free plan documentation for details.
-
-## Existing `db.json`
-
-If a legacy `data/db.json` is present when the server starts, the app performs a one-time import into PostgreSQL. The normal deployed version no longer writes to `data/db.json`.
+> Lưu ý: Render Free Postgres có giới hạn/thời hạn theo chính sách của Render. Kiểm tra plan hiện tại trước khi dùng dữ liệu quan trọng.
